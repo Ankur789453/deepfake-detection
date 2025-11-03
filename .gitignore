@@ -20,10 +20,16 @@ best_deepfake_model.pth
 # Data Directories (Your Specific Structure)
 # Main data directory with raw videos and processed files
 data/raw/
+data/raw/real
+data/raw/fake
 data/frames/
 data/crops/
 data/temp_faces/
 data/tem_faces/
+test_data/raw/
+test_data/frames/
+test_data/crops/
+test_data/temp_faces/
 
 # Keep CSV labels but ignore if it gets too large
 # data/face_labels.csv

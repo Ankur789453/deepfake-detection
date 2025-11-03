@@ -12,8 +12,8 @@ def test_sample_image():
     # First, let's find a sample image from your dataset
     sample_paths = [
         #"data/frames/fake_frames/000_003/000_003_frame_0000.jpg",
-        "data/frames/fake_frames/000_003/000_003_frame_0001.jpg",
-        "data/frames/fake_frames/000_003/000_003_frame_0002.jpg",
+        "data/frames/fake_frames/ai (1)/ai (1)_frame_0000.jpg",
+        "data/frames/fake_frames/ai (1)/ai (1)_frame_0001.jpg",
     ]
     
     # Find first existing image
