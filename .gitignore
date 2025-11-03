@@ -1,0 +1,104 @@
+# ================================
+# DEEPFAKE DETECTION PROJECT - CUSTOM
+# ================================
+
+# Python Cache & Compiled Files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment (your specific env)
+myenv/
+
+# Model Files (Large Binary Files)
+# Your trained model - 94MB file
+best_deepfake_model.pth
+*.pth
+*.pt
+
+# Data Directories (Your Specific Structure)
+# Main data directory with raw videos and processed files
+data/raw/
+data/frames/
+data/crops/
+data/temp_faces/
+data/tem_faces/
+
+# Keep CSV labels but ignore if it gets too large
+# data/face_labels.csv
+
+# Test Data (Keep small test files)
+# test_data/ - keeping this for testing
+
+# Video Files (Large Media Files)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+*.flv
+*.webm
+
+# Image Files in Data Processing
+# Uncomment these if your datasets become too large
+# *.jpg
+# *.jpeg
+# *.png
+
+# Temporary Processing Files
+temp/
+tmp/
+temporary/
+*_temp/
+*_tmp/
+
+# Log Files
+*.log
+*.out
+*.err
+
+# Backup Files
+*.bak
+*_backup.*
+*_old.*
+
+# IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment Variables
+.env
+.env.local
+
+# Cache Directories
+.cache/
+cache/
+
+#python file for test purpose only
+test.py
+
+# ================================
+# KEEP THESE FILES
+# ================================
+# Keep all Python scripts
+!*.py
+
+# Keep configuration files
+!requirements.txt
+!*.md
+!*.bat
+
+# Keep small test images
+!test_data/
+!test_data/**
+
+# Keep CSV labels (comment out if file becomes too large)
+!data/face_labels.csv
