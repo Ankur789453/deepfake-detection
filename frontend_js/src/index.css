@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* DeepDetect - Futuristic Dark Theme with Neon Accents */
+    --background: 240 10% 3.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 240 10% 6%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 240 10% 6%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Electric Blue/Cyan - Primary Neon */
+    --primary: 189 94% 55%;
+    --primary-foreground: 240 10% 3.9%;
+
+    /* Purple Neon Accent */
+    --secondary: 270 80% 60%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 240 10% 12%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 270 80% 60%;
+    --accent-foreground: 210 40% 98%;
+
+    /* Red for deepfake detection */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Green for authentic/real */
+    --success: 142 76% 56%;
+    --success-foreground: 240 10% 3.9%;
+
+    --border: 240 10% 15%;
+    --input: 240 10% 12%;
+    --ring: 189 94% 55%;
+
+    --radius: 1rem;
+
+    /* Neon Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(189 94% 55%) 0%, hsl(270 80% 60%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(240 10% 8%) 0%, hsl(240 10% 6%) 100%);
+    --gradient-glow: radial-gradient(circle at 50% 0%, hsl(189 94% 55% / 0.15) 0%, transparent 60%);
+    --gradient-purple: linear-gradient(135deg, hsl(270 80% 60%) 0%, hsl(280 90% 65%) 100%);
+    --gradient-cyber: linear-gradient(135deg, hsl(189 94% 55%) 0%, hsl(270 80% 60%) 50%, hsl(320 85% 60%) 100%);
+
+    /* Neon Shadows & Glows */
+    --shadow-glow: 0 0 40px hsl(189 94% 55% / 0.3);
+    --shadow-glow-purple: 0 0 40px hsl(270 80% 60% / 0.3);
+    --shadow-card: 0 8px 32px hsl(240 100% 2% / 0.6);
+    --shadow-neon: 0 0 20px hsl(189 94% 55% / 0.5), 0 0 40px hsl(189 94% 55% / 0.3);
+    --shadow-neon-purple: 0 0 20px hsl(270 80% 60% / 0.5), 0 0 40px hsl(270 80% 60% / 0.3);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground;
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+
+  .gradient-glow {
+    background: var(--gradient-glow);
+  }
+
+  .gradient-purple {
+    background: var(--gradient-purple);
+  }
+
+  .gradient-cyber {
+    background: var(--gradient-cyber);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-glow-purple {
+    box-shadow: var(--shadow-glow-purple);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-neon {
+    box-shadow: var(--shadow-neon);
+  }
+
+  .shadow-neon-purple {
+    box-shadow: var(--shadow-neon-purple);
+  }
+
+  .glass-effect {
+    @apply bg-card/40 backdrop-blur-xl border border-border/50;
+  }
+
+  .glass-neon {
+    @apply bg-card/30 backdrop-blur-2xl border border-primary/30;
+  }
+
+  .neon-border {
+    @apply border border-primary shadow-neon;
+  }
+
+  .neon-border-purple {
+    @apply border border-secondary shadow-neon-purple;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-tilt {
+    transition: transform 0.3s ease;
+  }
+
+  .animate-tilt:hover {
+    transform: perspective(1000px) rotateX(5deg) rotateY(-5deg) scale(1.02);
+  }
+
+  .parallax {
+    transition: transform 0.2s ease-out;
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 20px hsl(189 94% 55% / 0.3);
+  }
+  to {
+    box-shadow: 0 0 50px hsl(189 94% 55% / 0.6), 0 0 80px hsl(270 80% 60% / 0.4);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px hsl(189 94% 55% / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px hsl(189 94% 55% / 0.8), 0 0 60px hsl(270 80% 60% / 0.5);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
