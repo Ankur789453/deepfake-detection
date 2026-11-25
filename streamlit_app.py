@@ -90,9 +90,14 @@ BACKEND_URL = "https://deepfake-backend-qe2c.onrender.com"
 def check_backend_health():
     """Check if backend is running"""
     try:
-        response = requests.get(f"{BACKEND_URL}/health", timeout=5)
+        response = requests.get(
+            f"{BACKEND_URL}/health",
+            timeout=90
+        )
         return response.status_code == 200
-    except:
+
+    except requests.exceptions.RequestException as e:
+        st.sidebar.caption(f"Backend connection error: {e}")
         return False
 
 def make_prediction(file, file_type, max_frames=30):
