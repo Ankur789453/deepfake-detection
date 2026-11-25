@@ -5,8 +5,9 @@ import tempfile
 import os
 import shutil
 from typing import Dict, Any
+import threading
+from pathlib import Path
 import logging
-from model_inference import DeepfakeDetector
 import uvicorn
 
 # Setup logging
@@ -30,18 +31,35 @@ app.add_middleware(
 )
 
 # Initialize the deepfake detector
+# Lazy model initialization
 detector = None
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize the model on startup"""
+detector_lock = threading.Lock()
+inference_lock = threading.Lock()
+
+BASE_DIR = Path(__file__).resolve().parent
+
+
+def get_detector():
+    """
+    Load the deepfake model only when the first prediction is requested.
+    """
     global detector
-    try:
-        detector = DeepfakeDetector()
-        logger.info("Deepfake detector initialized successfully")
-    except Exception as e:
-        logger.error(f"Failed to initialize detector: {e}")
-        raise
+
+    if detector is None:
+        with detector_lock:
+            if detector is None:
+                from model_inference import DeepfakeDetector
+
+                model_path = BASE_DIR / "best_deepfake_model.pth"
+
+                detector = DeepfakeDetector(
+                    model_path=str(model_path)
+                )
+
+                logger.info("Deepfake detector loaded successfully")
+
+    return detector
 
 @app.get("/")
 async def root():
@@ -58,7 +76,7 @@ async def health_check():
     return {
         "status": "healthy",
         "model_loaded": detector is not None,
-        "device": str(detector.device) if detector else "unknown"
+        "device": str(detector.device) if detector else "cpu"
     }
 
 @app.post("/predict/image")
@@ -72,9 +90,9 @@ async def predict_image(file: UploadFile = File(...)) -> Dict[str, Any]:
     Returns:
         Prediction results
     """
-    if detector is None:
-        raise HTTPException(status_code=500, detail="Model not loaded")
-    
+    #if detector is None:
+    #    raise HTTPException(status_code=500, detail="Model not loaded")
+    current_detector = get_detector()
     # Validate file type
     allowed_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.webp'}
     file_ext = os.path.splitext(file.filename)[1].lower()
@@ -95,7 +113,10 @@ async def predict_image(file: UploadFile = File(...)) -> Dict[str, Any]:
             temp_file_path = temp_file.name
         
         # Make prediction
-        prediction, confidence, details = detector.predict_image(temp_file_path)
+        with inference_lock:
+            prediction, confidence, details = current_detector.predict_image(
+                temp_file_path
+            )
         
         # Prepare response
         response = {
@@ -143,9 +164,9 @@ async def predict_video(file: UploadFile = File(...), max_frames: int = 30) -> D
     Returns:
         Prediction results
     """
-    if detector is None:
-        raise HTTPException(status_code=500, detail="Model not loaded")
-    
+    #if detector is None:
+    #   raise HTTPException(status_code=500, detail="Model not loaded")
+    current_detector = get_detector()
     # Validate file type
     allowed_extensions = {'.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm'}
     file_ext = os.path.splitext(file.filename)[1].lower()
@@ -173,7 +194,10 @@ async def predict_video(file: UploadFile = File(...), max_frames: int = 30) -> D
             temp_file_path = temp_file.name
         
         # Make prediction
-        prediction, confidence, details = detector.predict_video(temp_file_path, max_frames)
+        with inference_lock:
+            prediction, confidence, details = current_detector.predict_video(
+                temp_file_path, max_frames
+            )
         
         # Prepare response
         response = {
@@ -229,8 +253,8 @@ async def predict_auto(file: UploadFile = File(...), max_frames: int = 30) -> Di
     Returns:
         Prediction results
     """
-    if detector is None:
-        raise HTTPException(status_code=500, detail="Model not loaded")
+    #if detector is None:
+    #    raise HTTPException(status_code=500, detail="Model not loaded")
     
     # Determine file type
     file_ext = os.path.splitext(file.filename)[1].lower()
