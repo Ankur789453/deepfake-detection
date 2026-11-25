@@ -35,26 +35,54 @@ class DeepfakeDetector:
     def _load_model(self):
         """Load the trained model"""
         try:
+                        # Optimize CPU execution for low-memory hosting
+            torch.set_num_threads(1)
+
+            try:
+                torch.set_num_interop_threads(1)
+            except RuntimeError:
+                pass
+
+            # Render free instance uses CPU
+            self.device = torch.device("cpu")
             # Create model architecture (same as training)
             self.model = models.resnet50(weights=None)  # Don't load pretrained weights
             num_ftrs = self.model.fc.in_features
             self.model.fc = nn.Linear(num_ftrs, 2)  # 2 classes: real/fake
             
             # Load trained weights
-            if os.path.exists(self.model_path):
-                checkpoint = torch.load(self.model_path, map_location=self.device)
-                self.model.load_state_dict(checkpoint['model_state_dict'])
-                logger.info(f"Model loaded from {self.model_path}")
-                
-                # Print model info if available
-                if 'val_acc' in checkpoint:
-                    logger.info(f"Model validation accuracy: {checkpoint['val_acc']:.2f}%")
-            else:
-                logger.error(f"Model file not found: {self.model_path}")
-                raise FileNotFoundError(f"Model file not found: {self.model_path}")
-            
-            self.model.to(self.device)
-            self.model.eval()
+            # Load trained weights using memory-mapped checkpoint loading
+if os.path.exists(self.model_path):
+
+    checkpoint = torch.load(
+        self.model_path,
+        map_location="cpu",
+        weights_only=True,
+        mmap=True
+    )
+
+    self.model.load_state_dict(checkpoint["model_state_dict"])
+
+    if "val_acc" in checkpoint:
+        logger.info(
+            f"Model validation accuracy: {checkpoint['val_acc']:.2f}%"
+        )
+
+    del checkpoint
+
+    import gc
+    gc.collect()
+
+    logger.info(f"Model loaded from {self.model_path}")
+
+else:
+    logger.error(f"Model file not found: {self.model_path}")
+    raise FileNotFoundError(
+        f"Model file not found: {self.model_path}"
+    )
+
+self.model.to(self.device)
+self.model.eval()
             
         except Exception as e:
             logger.error(f"Error loading model: {e}")
@@ -165,7 +193,7 @@ class DeepfakeDetector:
             input_tensor = self.transform(face_image).unsqueeze(0).to(self.device)
             
             # Predict
-            with torch.no_grad():
+            with torch.inference_mode():
                 outputs = self.model(input_tensor)
                 probabilities = torch.softmax(outputs, dim=1)
                 fake_prob = probabilities[0][1].item()  # Probability of being fake
