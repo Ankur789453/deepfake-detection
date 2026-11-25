@@ -33,60 +33,66 @@ class DeepfakeDetector:
         logger.info(f"DeepfakeDetector initialized on device: {self.device}")
     
     def _load_model(self):
-        """Load the trained model"""
+    """Load the trained model."""
+
+    try:
+        # Optimize CPU execution for low-memory hosting
+        torch.set_num_threads(1)
+
         try:
-                        # Optimize CPU execution for low-memory hosting
-            torch.set_num_threads(1)
+            torch.set_num_interop_threads(1)
+        except RuntimeError:
+            pass
 
-            try:
-                torch.set_num_interop_threads(1)
-            except RuntimeError:
-                pass
+        # Use CPU on Render
+        self.device = torch.device("cpu")
 
-            # Render free instance uses CPU
-            self.device = torch.device("cpu")
-            # Create model architecture (same as training)
-            self.model = models.resnet50(weights=None)  # Don't load pretrained weights
-            num_ftrs = self.model.fc.in_features
-            self.model.fc = nn.Linear(num_ftrs, 2)  # 2 classes: real/fake
-            
-            # Load trained weights
-            # Load trained weights using memory-mapped checkpoint loading
-if os.path.exists(self.model_path):
+        # Check whether model file exists
+        if not os.path.exists(self.model_path):
+            raise FileNotFoundError(
+                f"Model file not found: {self.model_path}"
+            )
 
-    checkpoint = torch.load(
-        self.model_path,
-        map_location="cpu",
-        weights_only=True,
-        mmap=True
-    )
+        logger.info("Creating ResNet50 architecture...")
 
-    self.model.load_state_dict(checkpoint["model_state_dict"])
+        # Create model architecture
+        self.model = models.resnet50(weights=None)
+        num_ftrs = self.model.fc.in_features
+        self.model.fc = nn.Linear(num_ftrs, 2)
 
-    if "val_acc" in checkpoint:
-        logger.info(
-            f"Model validation accuracy: {checkpoint['val_acc']:.2f}%"
+        logger.info("Loading trained weights...")
+
+        # Load checkpoint
+        checkpoint = torch.load(
+            self.model_path,
+            map_location="cpu",
+            weights_only=True,
+            mmap=True
         )
 
-    del checkpoint
+        self.model.load_state_dict(
+            checkpoint["model_state_dict"]
+        )
 
-    import gc
-    gc.collect()
+        if "val_acc" in checkpoint:
+            logger.info(
+                f"Model validation accuracy: {checkpoint['val_acc']:.2f}%"
+            )
 
-    logger.info(f"Model loaded from {self.model_path}")
+        del checkpoint
 
-else:
-    logger.error(f"Model file not found: {self.model_path}")
-    raise FileNotFoundError(
-        f"Model file not found: {self.model_path}"
-    )
+        import gc
+        gc.collect()
 
-self.model.to(self.device)
-self.model.eval()
-            
-        except Exception as e:
-            logger.error(f"Error loading model: {e}")
-            raise
+        # Prepare model for inference
+        self.model.to(self.device)
+        self.model.eval()
+
+        logger.info("Model loaded successfully on CPU")
+
+    except Exception:
+        logger.exception("Error loading model")
+        raise
     
     def _setup_transforms(self):
         """Setup image preprocessing transforms"""
