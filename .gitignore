@@ -11,10 +11,8 @@ __pycache__/
 # Virtual Environment (your specific env)
 myenv/
 
-# Model Files (Large Binary Files)
-# Your trained model - 94MB file
-best_deepfake_model.pth
-*.pth
+# Model Files
+# Trained model is tracked using Git LFS
 *.pt
 
 # Data Directories (Your Specific Structure)
