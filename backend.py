@@ -41,25 +41,32 @@ BASE_DIR = Path(__file__).resolve().parent
 
 
 def get_detector():
-    """
-    Load the deepfake model only when the first prediction is requested.
-    """
     global detector
 
-    if detector is None:
-        with detector_lock:
-            if detector is None:
-                from model_inference import DeepfakeDetector
+    try:
+        if detector is None:
+            with detector_lock:
+                if detector is None:
+                    from model_inference import DeepfakeDetector
 
-                model_path = BASE_DIR / "best_deepfake_model.pth"
+                    model_path = BASE_DIR / "best_deepfake_model.pth"
 
-                detector = DeepfakeDetector(
-                    model_path=str(model_path)
-                )
+                    if not model_path.exists():
+                        raise FileNotFoundError(
+                            f"Model file not found: {model_path}"
+                        )
 
-                logger.info("Deepfake detector loaded successfully")
+                    detector = DeepfakeDetector(
+                        model_path=str(model_path)
+                    )
 
-    return detector
+                    logger.info("Deepfake detector loaded successfully")
+
+        return detector
+
+    except Exception:
+        logger.exception("DETECTOR INITIALIZATION FAILED")
+        raise
 
 @app.get("/")
 async def root():
@@ -70,7 +77,47 @@ async def root():
         "model_loaded": detector is not None
     }
 
-@app.get("/health")
+@app.post("/debug/predict")
+async def debug_predict(file: UploadFile = File(...)):
+    import traceback
+    import tempfile
+    import os
+
+    try:
+        current_detector = get_detector()
+
+        suffix = os.path.splitext(file.filename)[1] or ".jpg"
+
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix=suffix
+        ) as temp_file:
+            content = await file.read()
+            temp_file.write(content)
+            temp_path = temp_file.name
+
+        try:
+            with inference_lock:
+                result = current_detector.predict_image(temp_path)
+
+            return {
+                "status": "success",
+                "result": str(result)
+            }
+
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    except Exception as e:
+        logger.exception("DEBUG PREDICTION FAILED")
+
+        return {
+            "status": "error",
+            "error_type": type(e).__name__,
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
 async def health_check():
     """Detailed health check"""
     return {
