@@ -85,7 +85,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Configuration
-BACKEND_URL = "http://localhost:8000"
+BACKEND_URL = "https://deepfake-backend-qe2c.onrender.com"
 
 def check_backend_health():
     """Check if backend is running"""
