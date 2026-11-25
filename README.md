@@ -105,7 +105,7 @@ pip install -r requirements.txt
 2. **Quick Launch (Windows)**
 ```bash
 # Launch both backend and frontend
-start_app.bat
+.\start_app.bat
 ```
 
 3. **Manual Launch**
