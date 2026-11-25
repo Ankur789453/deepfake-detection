@@ -1,0 +1,17 @@
+
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# CPU-only deep learning
+torch==2.2.2+cpu
+torchvision==0.17.2+cpu
+
+# Image processing
+numpy==1.26.4
+Pillow==11.3.0
+opencv-python-headless==4.10.0.84
+
+# FastAPI
+fastapi>=0.115.0,<1.0
+uvicorn>=0.30.0,<1.0
+python-multipart>=0.0.9
+
